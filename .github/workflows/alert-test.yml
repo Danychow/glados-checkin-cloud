@@ -1,0 +1,26 @@
+name: 告警通道自检（手动）
+
+on:
+  workflow_dispatch: {}   # 只在手动点击时运行
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 发送自检邮件
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+        run: |
+          echo "发件账号: ${SMTP_USER}"
+          echo "收件地址: ${ALERT_TO}"
+          python3 scripts/alert.py \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "告警通道自检：收到此邮件说明 SMTP 配置正确，签到失败通知与临期提醒可达"

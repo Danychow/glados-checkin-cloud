@@ -1,0 +1,129 @@
+name: 续期能力探测（一次性校准）
+
+on:
+  workflow_dispatch: {}   # 只在手动点击时运行，不参与日常签到
+
+permissions:
+  contents: write         # 用于回写探测结果
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 执行三项探测（IMAP / Turnstile / cookie）
+        env:
+          MAIL_IMAP_HOST: ${{ secrets.MAIL_IMAP_HOST }}
+          MAIL_IMAP_PORT: ${{ secrets.MAIL_IMAP_PORT }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          GLADOS_EMAIL: ${{ secrets.GLADOS_EMAIL }}
+          GLADOS_CREDENTIALS_JSON: ${{ secrets.GLADOS_CREDENTIALS_JSON }}
+        run: |
+          mkdir -p logs
+          cat > /tmp/probe.py <<'PY'
+          import json, os, email, imaplib, urllib.request
+          from datetime import datetime, timezone
+          from email.header import decode_header
+
+          out = []
+          def log(s):
+              print(s)
+              out.append(s)
+
+          def dec(v):
+              if not v:
+                  return ""
+              parts = []
+              for text, cs in decode_header(v):
+                  parts.append(text.decode(cs or "utf-8", "replace") if isinstance(text, bytes) else text)
+              return "".join(parts)
+
+          def list_mail(tag, limit=12):
+              host = (os.environ.get("MAIL_IMAP_HOST") or "").strip() or "imap.gmail.com"
+              port = int((os.environ.get("MAIL_IMAP_PORT") or "993").strip())
+              user = (os.environ.get("MAIL_USER") or "").strip()
+              pwd = os.environ.get("MAIL_PASS") or ""
+              try:
+                  c = imaplib.IMAP4_SSL(host, port, timeout=25)
+                  c.login(user, pwd)
+                  if any(host.endswith(d) for d in ("qq.com", "163.com", "126.com")):
+                      imaplib.Commands["ID"] = ("AUTH",)
+                      c._simple_command("ID", '("name" "glados-checkin" "version" "1.0")')
+                  c.select("INBOX", readonly=True)
+                  since = datetime.now(timezone.utc).date().strftime("%d-%b-%Y")
+                  typ, data = c.uid("SEARCH", None, "SINCE", since)
+                  uids = (data[0].split() if data and data[0] else [])[-limit:]
+                  log(f"[{tag}] IMAP 登录成功 {host}:{port}，今日邮件 {len(uids)} 封")
+                  for uid in reversed(uids):
+                      t, f = c.uid("FETCH", uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])")
+                      raw = b""
+                      for it in f:
+                          if isinstance(it, tuple):
+                              raw = it[1]
+                      m = email.message_from_bytes(raw)
+                      log(f"  邮件 {uid.decode()}: from={dec(m.get('From'))[:70]} | subject={dec(m.get('Subject'))[:70]} | {m.get('Date')}")
+                  c.logout()
+              except Exception as e:
+                  log(f"[{tag}] IMAP 失败: {type(e).__name__}: {e}")
+
+          log(f"探测时间(UTC): {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
+          log(f"Runner 出口 IP 参考: 见 Actions 日志中各步骤来源")
+
+          list_mail("探测1-收件箱")
+
+          ema = (os.environ.get("GLADOS_EMAIL") or "").strip()
+          try:
+              body = json.dumps({"address": ema.lower(), "site": "glados.network"}).encode("utf-8")
+              req = urllib.request.Request(
+                  "https://glados.space/api/auth", data=body, method="POST",
+                  headers={"Content-Type": "application/json",
+                           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                           "Origin": "https://glados.space", "Referer": "https://glados.space/login"})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  d = json.loads(r.read().decode("utf-8", "replace"))
+              log(f"[探测2-人机校验] /api/auth code={d.get('code')} captcha_required={d.get('captcha_required')} sitekey={str(d.get('sitekey'))[:24]}")
+              if d.get("captcha_required"):
+                  log("结论: 服务端要求 Turnstile → 纯 API 自动登录不可行，需降级为人工登录一次")
+              else:
+                  log("结论: 未要求人机校验 → 自动登录路线可用（已向该邮箱发出一封验证码邮件）")
+          except urllib.error.HTTPError as e:
+              log(f"[探测2-人机校验] HTTP {e.code}: {e.read()[:200]!r}")
+          except Exception as e:
+              log(f"[探测2-人机校验] 失败: {type(e).__name__}: {e}")
+
+          try:
+              cfg = json.loads(os.environ.get("GLADOS_CREDENTIALS_JSON") or "{}")
+              acc = (cfg.get("accounts") or [{}])[0]
+              req = urllib.request.Request("https://glados.space/api/user/status",
+                                           headers={"Cookie": acc.get("cookie", ""),
+                                                    "User-Agent": acc.get("user_agent") or "Mozilla/5.0"})
+              d = json.loads(urllib.request.urlopen(req, timeout=25).read().decode())
+              log(f"[探测3-cookie] /api/user/status code={d.get('code')}（0=有效，-2=失效）")
+          except Exception as e:
+              log(f"[探测3-cookie] 失败: {type(e).__name__}: {e}")
+
+          import time
+          time.sleep(45)
+          list_mail("探测4-等待45秒后收件箱")
+
+          with open("logs/probe-result.txt", "w", encoding="utf-8") as f:
+              f.write("\n".join(out) + "\n")
+          PY
+          python3 /tmp/probe.py
+
+      - name: 回写探测结果到仓库
+        if: always()
+        run: |
+          git config user.name "glados-checkin-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add logs/probe-result.txt || true
+          if git diff --cached --quiet; then
+            echo "无结果文件可提交"
+          else
+            git commit -m "探测结果: run#${{ github.run_number }}"
+            git push
+          fi

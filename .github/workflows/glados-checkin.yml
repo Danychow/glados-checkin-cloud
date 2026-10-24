@@ -1,0 +1,144 @@
+name: GLaDOS 每日签到（云端）
+
+on:
+  schedule:
+    # GitHub Actions 的 cron 只支持 UTC（无本地时区选项）
+    # UTC 04:00 = 北京时间 12:00（中国无夏令时，全年固定偏移 +8）
+    - cron: "0 4 * * *"
+  push:
+    branches: [main]      # 人工推送自动跑一次（部署/改 Secret 后即验证；机器人回写日志的 push 不会再触发）
+  workflow_dispatch: {}   # Actions 页面手动触发（测试 / 断签补跑）
+
+permissions:
+  contents: write         # 签到 job 需要把运行日志回写仓库
+
+concurrency:              # 防止手动触发与定时触发重叠执行
+  group: glados-checkin
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Shanghai       # 脚本内 date.today() 与日志文件名按东八区"今天"判定
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 预检 GLaDOS API 可达性
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -m 15 \
+            -H "User-Agent: Mozilla/5.0" \
+            "https://glados.space/api/user/status" || echo "000")
+          echo "GLaDOS /api/user/status -> HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::GLaDOS API 不可达（HTTP $code），runner 出口 IP 可能被拦截，本次终止并告警"
+            exit 1
+          fi
+
+      - name: 准备凭证（Secrets 优先，仓库内文件兜底）
+        env:
+          GLADOS_CREDENTIALS_JSON: ${{ secrets.GLADOS_CREDENTIALS_JSON }}
+        run: |
+          if [ -n "$GLADOS_CREDENTIALS_JSON" ]; then
+            mkdir -p config
+            printf '%s' "$GLADOS_CREDENTIALS_JSON" > config/credentials.json
+            chmod 600 config/credentials.json
+            echo "凭证来源: Secrets（优先模式，最安全）"
+          elif [ -f config/credentials.json ]; then
+            chmod 600 config/credentials.json || true
+            echo "凭证来源: 仓库内 config/credentials.json（私有仓库模式）"
+          else
+            echo "::error::未找到凭证：请配置 secrets.GLADOS_CREDENTIALS_JSON"
+            exit 2
+          fi
+
+      - name: Cookie 健康度提示（依赖可选 created 字段，仅提醒不阻断）
+        run: python3 scripts/cookie_health.py
+
+      - name: 执行签到（外层整跑最多 3 次，退避 60s/120s）
+        run: |
+          for i in 1 2 3; do
+            echo "===== 第 ${i} 次尝试 ====="
+            if python3 scripts/glados_checkin.py; then
+              echo "===== 结局：签到成功或今日已签到 ====="
+              exit 0
+            fi
+            # 确定性失败（配置错误/设备校验失败）重试无意义，立即告警；
+            # 「登录态失效」不提前退出：实测服务端存在瞬时 -2 误报，走正常重试
+            if ls logs/checkin-*.log >/dev/null 2>&1 && \
+               grep -lq "凭证配置错误\|设备校验失败" logs/checkin-*.log; then
+              echo "::error::检测到确定性凭证类失败（配置错误/设备校验），重试无意义，转入告警"
+              exit 1
+            fi
+            if [ "$i" -lt 3 ]; then
+              wait=$((i * 60))
+              echo "第 ${i} 次失败，${wait}s 后重试"
+              sleep "$wait"
+            fi
+          done
+          echo "::error::连续 3 次运行均失败"
+          exit 1
+
+      - name: 上传当日日志（artifact 保留 30 天）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: glados-logs-run${{ github.run_number }}
+          path: logs/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: 回写运行结果与日志到仓库
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          mkdir -p logs
+          {
+            echo "run_number=${{ github.run_number }}"
+            echo "event=${{ github.event_name }}"
+            echo "status=$JOB_STATUS"
+            echo "time=$(date '+%Y-%m-%d %H:%M:%S %Z')"
+          } > logs/last-run.txt
+          git config user.name "glados-checkin-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add logs/ || true
+          if git diff --cached --quiet; then
+            echo "日志无变化，跳过提交"
+          else
+            git commit -m "签到日志: run#${{ github.run_number }} status=$JOB_STATUS"
+            git push
+          fi
+
+      - name: 失败邮件告警（可选，需配置 SMTP_* Secrets）
+        if: failure()
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python3 scripts/alert.py --run-url "$RUN_URL" "GLaDOS 云端签到失败，请查看运行记录"
+
+  # 月度保活：每月定时任务触发时顺带调用 enable API，重置 60 天无活动计时器，
+  # 自动延长定时任务有效期（公开仓库 60 天无活动会被 GitHub 停用定时触发）
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: 重新启用签到工作流（重置 60 天无活动计时器）
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/glados-checkin.yml/enable")
+          echo "enable API -> HTTP $code（204 为成功）"
+      - name: 完成
+        run: echo "保活完成：定时任务有效期已自动延长"

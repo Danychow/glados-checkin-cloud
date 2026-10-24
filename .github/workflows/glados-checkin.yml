@@ -55,8 +55,20 @@ jobs:
             exit 2
           fi
 
-      - name: Cookie 健康度提示（依赖可选 created 字段，仅提醒不阻断）
-        run: python3 scripts/cookie_health.py
+      - name: Cookie 龄期检查 + 临期邮件提醒
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+        run: |
+          out=$(python3 scripts/cookie_health.py || true)
+          echo "$out"
+          if echo "$out" | grep -q "建议近期续期\|请尽快续期"; then
+            line=$(echo "$out" | grep -m1 "cookie 已使用")
+            python3 scripts/alert.py "Cookie 临近到期：${line}。请用手机登录 glados.space 复制新 Cookie（gld:sess + gld:sess.sig），更新 Secret GLADOS_CREDENTIALS_JSON 并把 created 改为当天日期"
+          fi
 
       - name: 执行签到（外层整跑最多 3 次，退避 60s/120s）
         run: |

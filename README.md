@@ -8,7 +8,7 @@
 | 项 | 说明 |
 |---|---|
 | 定时签到 | `.github/workflows/glados-checkin.yml`，cron `0 4 * * *`（UTC）= 北京 12:00；push 到 main 也会触发（机器人回写日志的 push 不会再触发，无死循环） |
-| 保活 | `.github/workflows/keepalive.yml` 每月 1 日调用 enable API 重置 60 天无活动计时器，防止定时任务被自动停用 |
+| 保活 | 同一 workflow 内的 keepalive job：每月 1 日随定时任务触发，调用 enable API 重置 60 天无活动计时器，自动延长任务有效期 |
 | 凭证 | GitHub Secrets `GLADOS_CREDENTIALS_JSON`（公开仓库模式，凭证不入仓库；workflow 亦兼容私有仓库文件模式） |
 | 日志 | 每次运行把 `logs/` 回写到仓库 + artifact 保留 30 天，打开仓库 logs 目录即可看结果 |
 | 重试 | 脚本内 1s/2s/4s 退避 + 外层整跑 3 次（60s/120s 退避）；登录态失效参与重试（服务端有瞬时 -2 误报） |

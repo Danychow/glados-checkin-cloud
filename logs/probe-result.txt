@@ -1,0 +1,23 @@
+探测时间(UTC): 2026-10-24 11:32:37
+Runner 出口 IP 参考: 见 Actions 日志中各步骤来源
+[探测1-收件箱] IMAP 登录成功 imap.gmail.com:993，今日邮件 8 封
+  邮件 4057: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:27:35 GMT
+  邮件 4056: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:27:29 GMT
+  邮件 4055: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:22:12 GMT
+  邮件 4054: from=Google <no-reply@google.com> | subject=✅ Daniel，快在您的Windows上完成 Google 设置吧 | Sat, 24 Oct 2026 04:16:30 -0700
+  邮件 4053: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:15:26 GMT
+  邮件 4052: from=Railway <hello@news.railway.app> | subject=Changelog #0313: October 21 security incident | Fri, 23 Oct 2026 22:38:13 +0000
+  邮件 4051: from=Railway <hello@notify.railway.app> | subject=Railway security update: Preliminary report and guidance | Fri, 23 Oct 2026 20:47:44 +0000
+  邮件 4050: from="中国数字时代" <cdtchinese@chinadigitaltimes.net> | subject=《404档案馆》每周精选  2026/10/23 | Fri, 23 Oct 2026 16:07:08 +0000
+[探测2-人机校验] /api/auth code=-2 captcha_required=None sitekey=None
+结论: 未要求人机校验 → 自动登录路线可用（已向该邮箱发出一封验证码邮件）
+[探测3-cookie] /api/user/status code=0（0=有效，-2=失效）
+[探测4-等待45秒后收件箱] IMAP 登录成功 imap.gmail.com:993，今日邮件 8 封
+  邮件 4057: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:27:35 GMT
+  邮件 4056: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:27:29 GMT
+  邮件 4055: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:22:12 GMT
+  邮件 4054: from=Google <no-reply@google.com> | subject=✅ Daniel，快在您的Windows上完成 Google 设置吧 | Sat, 24 Oct 2026 04:16:30 -0700
+  邮件 4053: from=Google <no-reply@accounts.google.com> | subject=安全提醒 | Sat, 24 Oct 2026 11:15:26 GMT
+  邮件 4052: from=Railway <hello@news.railway.app> | subject=Changelog #0313: October 21 security incident | Fri, 23 Oct 2026 22:38:13 +0000
+  邮件 4051: from=Railway <hello@notify.railway.app> | subject=Railway security update: Preliminary report and guidance | Fri, 23 Oct 2026 20:47:44 +0000
+  邮件 4050: from="中国数字时代" <cdtchinese@chinadigitaltimes.net> | subject=《404档案馆》每周精选  2026/10/23 | Fri, 23 Oct 2026 16:07:08 +0000

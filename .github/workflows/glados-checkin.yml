@@ -3,8 +3,9 @@ name: GLaDOS 每日签到（云端）
 on:
   schedule:
     # GitHub Actions 的 cron 只支持 UTC（无本地时区选项）
-    # UTC 04:00 = 北京时间 12:00（中国无夏令时，全年固定偏移 +8）
-    - cron: "0 4 * * *"
+    # UTC 22:00 = 北京时间 06:00（中国无夏令时，全年固定偏移 +8）
+    # 2026-10-25 调整：由原 UTC 04:00（北京 12:00）提前，避开 GitHub 排队延迟拖到下午
+    - cron: "0 22 * * *"
   push:
     branches: [main]      # 人工推送自动跑一次（部署/改 Secret 后即验证；机器人回写日志的 push 不会再触发）
   workflow_dispatch: {}   # Actions 页面手动触发（测试 / 断签补跑）

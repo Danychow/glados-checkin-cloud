@@ -1,0 +1,39 @@
+2026-10-27 09:06:07 [INFO] ================================================================
+2026-10-27 09:06:07 [INFO] GLaDOS 每日自动签到开始
+2026-10-27 09:06:07 [INFO] 域名 glados.space, 待处理账号 1 个, 重试 3 次, 超时 30s
+2026-10-27 09:06:07 [INFO] ----- 账号 [主账号] 开始 -----
+2026-10-27 09:06:07 [ERROR] 已写入告警文件: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/ALERT-需要更新Cookie.txt
+2026-10-27 09:06:07 [ERROR] 账号 [主账号] 结果: 登录态失效 - 登录态失效(没有权限), 需要重新配置凭证
+2026-10-27 09:06:07 [INFO] ----------------------------------------------------------------
+2026-10-27 09:06:07 [INFO] 本次签到汇总:
+2026-10-27 09:06:07 [INFO]   [主账号] 登录态失效: 登录态失效(没有权限), 需要重新配置凭证
+2026-10-27 09:06:07 [INFO] 合计 1 个账号: 成功/已签到 0, 失败 1
+2026-10-27 09:06:07 [ERROR] ⚠ 存在待处理告警, 需要手动更新 Cookie: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/ALERT-需要更新Cookie.txt
+2026-10-27 09:06:07 [INFO] 日志文件: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/checkin-2026-10-27.log
+2026-10-27 09:06:07 [INFO] GLaDOS 每日自动签到结束
+2026-10-27 09:07:08 [INFO] ================================================================
+2026-10-27 09:07:08 [INFO] GLaDOS 每日自动签到开始
+2026-10-27 09:07:08 [INFO] 域名 glados.space, 待处理账号 1 个, 重试 3 次, 超时 30s
+2026-10-27 09:07:08 [INFO] ----- 账号 [主账号] 开始 -----
+2026-10-27 09:07:08 [ERROR] 已写入告警文件: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/ALERT-需要更新Cookie.txt
+2026-10-27 09:07:08 [ERROR] 账号 [主账号] 结果: 登录态失效 - 登录态失效(没有权限), 需要重新配置凭证
+2026-10-27 09:07:08 [INFO] ----------------------------------------------------------------
+2026-10-27 09:07:08 [INFO] 本次签到汇总:
+2026-10-27 09:07:08 [INFO]   [主账号] 登录态失效: 登录态失效(没有权限), 需要重新配置凭证
+2026-10-27 09:07:08 [INFO] 合计 1 个账号: 成功/已签到 0, 失败 1
+2026-10-27 09:07:08 [ERROR] ⚠ 存在待处理告警, 需要手动更新 Cookie: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/ALERT-需要更新Cookie.txt
+2026-10-27 09:07:08 [INFO] 日志文件: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/checkin-2026-10-27.log
+2026-10-27 09:07:08 [INFO] GLaDOS 每日自动签到结束
+2026-10-27 09:09:08 [INFO] ================================================================
+2026-10-27 09:09:08 [INFO] GLaDOS 每日自动签到开始
+2026-10-27 09:09:08 [INFO] 域名 glados.space, 待处理账号 1 个, 重试 3 次, 超时 30s
+2026-10-27 09:09:08 [INFO] ----- 账号 [主账号] 开始 -----
+2026-10-27 09:09:08 [ERROR] 已写入告警文件: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/ALERT-需要更新Cookie.txt
+2026-10-27 09:09:08 [ERROR] 账号 [主账号] 结果: 登录态失效 - 登录态失效(没有权限), 需要重新配置凭证
+2026-10-27 09:09:08 [INFO] ----------------------------------------------------------------
+2026-10-27 09:09:08 [INFO] 本次签到汇总:
+2026-10-27 09:09:08 [INFO]   [主账号] 登录态失效: 登录态失效(没有权限), 需要重新配置凭证
+2026-10-27 09:09:08 [INFO] 合计 1 个账号: 成功/已签到 0, 失败 1
+2026-10-27 09:09:08 [ERROR] ⚠ 存在待处理告警, 需要手动更新 Cookie: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/ALERT-需要更新Cookie.txt
+2026-10-27 09:09:08 [INFO] 日志文件: /home/runner/work/glados-checkin-cloud/glados-checkin-cloud/logs/checkin-2026-10-27.log
+2026-10-27 09:09:08 [INFO] GLaDOS 每日自动签到结束

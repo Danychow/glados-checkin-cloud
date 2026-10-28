@@ -10,3 +10,4 @@
 {"time": "2026-10-27T09:07:08", "account": "主账号", "status": "login_expired", "status_text": "登录态失效", "message": "登录态失效(没有权限), 需要重新配置凭证", "extra": {}}
 {"time": "2026-10-27T09:09:08", "account": "主账号", "status": "login_expired", "status_text": "登录态失效", "message": "登录态失效(没有权限), 需要重新配置凭证", "extra": {}}
 {"time": "2026-10-27T10:54:02", "account": "主账号", "status": "success", "status_text": "签到成功", "message": "签到成功, 本次 +9 积分", "extra": {"points_gained": 9, "streak": 5, "points_total": 45}}
+{"time": "2026-10-28T08:57:53", "account": "主账号", "status": "success", "status_text": "签到成功", "message": "签到成功, 本次 +6 积分", "extra": {"points_gained": 6, "streak": 6, "points_total": 51}}

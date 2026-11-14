@@ -27,3 +27,6 @@
 {"time": "2026-11-11T09:41:35", "account": "主账号", "status": "success", "status_text": "签到成功", "message": "签到成功, 本次 +1 积分", "extra": {"points_gained": 1, "streak": 1, "points_total": 17}}
 {"time": "2026-11-12T10:40:41", "account": "主账号", "status": "success", "status_text": "签到成功", "message": "签到成功, 本次 +1 积分", "extra": {"points_gained": 1, "streak": 1, "points_total": 18}}
 {"time": "2026-11-13T10:22:04", "account": "主账号", "status": "success", "status_text": "签到成功", "message": "签到成功, 本次 +1 积分", "extra": {"points_gained": 1, "streak": 1, "points_total": 19}}
+{"time": "2026-11-14T09:57:38", "account": "主账号", "status": "failed", "status_text": "签到失败", "message": "Cloudflare verification failed. Nothing was recorded — please retry.", "extra": {"code": 5}}
+{"time": "2026-11-14T09:58:39", "account": "主账号", "status": "failed", "status_text": "签到失败", "message": "Cloudflare verification failed. Nothing was recorded — please retry.", "extra": {"code": 5}}
+{"time": "2026-11-14T10:00:39", "account": "主账号", "status": "failed", "status_text": "签到失败", "message": "Cloudflare verification failed. Nothing was recorded — please retry.", "extra": {"code": 5}}
